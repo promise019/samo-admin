@@ -48,7 +48,7 @@ export default function Login() {
 
       <Button
         disabled={false}
-        className="w-full bg-green-500 rounded-md p-3 font-bold text-white"
+        className="w-full bg-red-800 rounded-md p-3 font-bold text-white"
         onClick={(e) => submitForm(e)}
       >
         Login

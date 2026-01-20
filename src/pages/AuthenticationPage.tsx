@@ -2,15 +2,21 @@ import { useState } from "react";
 import Login from "../component/Layout/Login";
 import Button from "../component/UI/Button";
 import Google from "../assets/logo/google logo.svg";
+import Logo from "../assets/image/Group 1 (2).svg";
 import Signup from "../component/Layout/Signup";
+import Welcome from "../component/Layout/welcomeComponent";
 
 export default function AuthenticationPage() {
   const [LoginPage, setPage] = useState<boolean>(true);
   return (
     <div
-      className="bg-[radial-gradient(circle_at_center,_#3b82f6,_#1e3a8a)] w-screen h-screen flex justify-center px-3 overflow-hidden pt-25 
-    md:px-30 md:pt-0 md:items-center lg:px-55 xl:px-90"
+      className="bg-[] w-screen h-screen md:flex justify-center px-3 overflow-hidden pt-10 
+    md:px-25 md:pt-0 md:items-center lg:px-55 xl:px-40 space-y-10"
     >
+      <div className="flex space-x-2 mb-5 md:absolute top-5 left-5">
+        <img src={Logo} alt="logo" className="w-10" />
+        <h1 className="font-bold text-red-950 mt-2 text-xl">Daily Starters</h1>
+      </div>
       <form
         className=" rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] w-full h-fit p-4 space-y-3
       md:p-10 xl:w-130"
@@ -57,6 +63,7 @@ export default function AuthenticationPage() {
           )}
         </p>
       </form>
+      {/* <Welcome /> */}
     </div>
   );
 }
