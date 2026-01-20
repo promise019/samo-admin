@@ -1,32 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function ImagePreview() {
-  const [image, setImage] = useState<File | null>(null);
+interface ImagePreviewProps {
+  image: File | null;
+  onChange: (file: File | null) => void;
+}
+
+export default function ImagePreview({ image, onChange }: ImagePreviewProps) {
   const [preview, setPreview] = useState<string | null>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  useEffect(() => {
+    if (!image) {
+      setPreview(null);
+      return;
+    }
 
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
-  };
+    const objectUrl = URL.createObjectURL(image);
+    setPreview(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [image]);
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="space-y-2">
       <input
         type="file"
         accept="image/*"
-        onChange={handleImageChange}
-        className="border border-gray-100 p-3"
+        onChange={(e) => {
+          const file = e.target.files?.[0] ?? null;
+          onChange(file);
+        }}
       />
 
       {preview && (
-        <img
-          src={preview}
-          alt="Selected preview"
-          className="w-48 h-48 object-cover rounded-md"
-        />
+        <div className="relative w-40">
+          <img src={preview} alt="Preview" className="rounded-md border" />
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="absolute top-1 right-1 bg-black/60 text-white text-xs px-2 rounded"
+          >
+            ✕
+          </button>
+        </div>
       )}
     </div>
   );

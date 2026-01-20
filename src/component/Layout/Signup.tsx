@@ -1,65 +1,70 @@
 import { useState } from "react";
 import Input from "../UI/Input";
 import Button from "../UI/Button";
+import type { FormEvent, ChangeEvent } from "react";
 
-interface userDataProp {
+interface UserData {
   userName: string;
   email: string;
-  password: string | number;
+  password: string;
 }
 
 export default function Signup() {
-  const [userData, setUserData] = useState<userDataProp>({
+  const [userData, setUserData] = useState<UserData>({
     userName: "",
     email: "",
     password: "",
   });
 
-  const handleChange = (e: any): void => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUserData({ ...userData, [name]: value });
+
+    setUserData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const submitForm = (e) => {
+  const submitForm = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log(userData);
   };
 
   return (
-    <>
+    <form onSubmit={submitForm} className="space-y-4">
       <Input
-        type="userName"
-        className="w-full hover:bg-white rounded-md p-3 border border-gray-600"
-        onChange={(e) => handleChange(e)}
-        value={userData.email}
-        name="email"
-        placeholder="input Username (e.g John)"
+        type="text"
+        className="w-full rounded-md p-3 border border-gray-600"
+        onChange={handleChange}
+        value={userData.userName}
+        name="userName"
+        placeholder="Username (e.g John)"
       />
 
       <Input
         type="email"
-        className="w-full hover:bg-white rounded-md p-3 border border-gray-600"
-        onChange={(e) => handleChange(e)}
+        className="w-full rounded-md p-3 border border-gray-600"
+        onChange={handleChange}
         value={userData.email}
         name="email"
-        placeholder="email (e.g john@gmail.com)"
+        placeholder="Email (e.g john@gmail.com)"
       />
 
       <Input
         type="password"
-        className="w-full hover:bg-white rounded-md p-3 border border-gray-600"
-        onChange={(e) => handleChange(e)}
+        className="w-full rounded-md p-3 border border-gray-600"
+        onChange={handleChange}
         value={userData.password}
-        name="email"
-        placeholder="input passworrd"
+        name="password"
+        placeholder="Password"
       />
 
       <Button
-        disabled={false}
+        type="submit"
         className="w-full bg-red-800 rounded-md p-3 font-bold text-white"
-        onClick={(e) => submitForm(e)}
       >
         Create Account
       </Button>
-    </>
+    </form>
   );
 }

@@ -1,10 +1,8 @@
 import { useState } from "react";
 import Login from "../component/Layout/Login";
 import Button from "../component/UI/Button";
-import Google from "../assets/logo/google logo.svg";
 import Logo from "../assets/image/Group 1 (2).svg";
 import Signup from "../component/Layout/Signup";
-import Welcome from "../component/Layout/welcomeComponent";
 
 export default function AuthenticationPage() {
   const [LoginPage, setPage] = useState<boolean>(true);
@@ -46,6 +44,7 @@ export default function AuthenticationPage() {
               <Button
                 onClick={() => setPage(false)}
                 className="font-bold text-green-800"
+                disabled={false}
               >
                 Signup
               </Button>
@@ -54,6 +53,7 @@ export default function AuthenticationPage() {
             <>
               Already have an accouunt?{" "}
               <Button
+                disabled={false}
                 onClick={() => setPage(true)}
                 className="font-bold text-green-800"
               >
