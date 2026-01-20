@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router";
 import AuthenticationPage from "./pages/AuthenticationPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import Dashboard from "./pages/dashboard";
+import AdminPostedPosts from "./pages/adminPosts";
 
 export default function App() {
   return (
@@ -9,6 +10,7 @@ export default function App() {
       <Route index element={<AuthenticationPage />} />
       <Route path="/Admin" element={<AdminDashboard />}>
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="posts" element={<AdminPostedPosts />} />
       </Route>
     </Routes>
   );

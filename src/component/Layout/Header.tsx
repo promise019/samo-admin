@@ -10,7 +10,7 @@ export default function Header() {
         return "Dashboard";
         break;
       case "/admin/posts":
-        return "Posts";
+        return "Published Daily Posts";
         break;
       case "/admin/statistics":
         return "Statistics";
@@ -21,7 +21,7 @@ export default function Header() {
     }
   };
   return (
-    <header className="sticky top-0 p-3 w-full bg-red-950 text-white flex justify-between">
+    <header className="sticky top-0 p-3 w-full bg-red-950 text-white flex justify-between z-10">
       <h1 className="font-bold text-xl">{getTitle()}</h1>
       <h1 className="font-bold">Admin User</h1>
     </header>
