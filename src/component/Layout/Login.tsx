@@ -2,6 +2,9 @@ import { useState } from "react";
 import Input from "../UI/Input";
 import Button from "../UI/Button";
 import type { FormEvent, ChangeEvent } from "react";
+import { toast } from "react-toastify";
+import { signIn } from "../../lib/auth";
+import { useNavigate } from "react-router";
 
 interface UserData {
   email: string;
@@ -13,6 +16,8 @@ export default function Login() {
     email: "",
     password: "",
   });
+  const [isloading, setIsloading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,9 +28,40 @@ export default function Login() {
     }));
   };
 
-  const submitForm = (e: FormEvent<HTMLFormElement>) => {
+  const submitForm = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(userData);
+    if (!userData.email || !userData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      setIsloading(true);
+      await signIn(userData.email, userData.password);
+      toast.success("Welcome back!");
+      // Redirect logic here (e.g., useNavigate to dashboard)
+      navigate("/admin/dashboard");
+    } catch (error: any) {
+      setIsloading(false);
+      console.error(error.code);
+
+      // Handle specific Login errors
+      switch (error.code) {
+        case "auth/invalid-credential":
+          toast.error("Incorrect email or password");
+          break;
+        case "auth/user-not-found":
+          toast.error("No account found with this email");
+          break;
+        case "auth/too-many-requests":
+          toast.error("Too many failed attempts. Try again later.");
+          break;
+        default:
+          toast.error("Failed to login. Please check your connection.");
+      }
+    } finally {
+      setIsloading(false);
+    }
   };
 
   const forgottenPassword = () => {
@@ -56,7 +92,7 @@ export default function Login() {
         type="submit"
         className="w-full bg-red-800 rounded-md p-3 font-bold text-white"
       >
-        Login
+        {isloading ? "Loading..." : "Login"}
       </Button>
 
       <Button
