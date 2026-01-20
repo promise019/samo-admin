@@ -1,8 +1,10 @@
 import { useState } from "react";
 import Input from "../component/UI/Input";
-import ImagePreview from "../component/UI/imagePreview";
+// import ImagePreview from "../component/UI/imagePreview";
 import Button from "../component/UI/Button";
 import type { ChangeEvent, FormEvent } from "react";
+import { uploadAdminPost } from "../lib/storage";
+import { toast, ToastContainer } from "react-toastify";
 
 interface PostData {
   title: string;
@@ -18,16 +20,40 @@ export default function Dashboard() {
     verse: "",
     img: null,
   });
+  const [isloading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!postData.title || !postData.message || !postData.verse) {
+      return toast.warn("Please fill in all fields");
+    }
+    setLoading(true);
+    try {
+      // Mapping your component's 'message' to the logic's 'content'
+      await uploadAdminPost({
+        title: postData.title,
+        message: postData.message,
+        verse: postData.verse,
+      });
+      setLoading(false);
+      // Clear form on success
+      setPostData({ title: "", message: "", verse: "", img: null });
+      toast.success("Daily Word published successfully!");
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      toast.error("Failed to publish. Ensure you are logged in as Admin.");
+    } finally {
+      setLoading(false);
+    }
     console.log(postData);
     // Firebase logic later
   };
 
   return (
-    <div className="p-5 space-y-4 bg-gray-50">
+    <div className="pb-17 p-5 space-y-4 bg-gray-50">
+      <ToastContainer />
       {/* Stats */}
       <section className="text-white flex w-full justify-between space-x-4">
         {[
@@ -81,18 +107,18 @@ export default function Dashboard() {
             }
           />
 
-          <label>Image</label>
+          {/* <label>Image</label>
           <ImagePreview
             image={postData.img}
             onChange={(file) => setPostData({ ...postData, img: file })}
-          />
+          /> */}
 
           <Button
             type="submit"
-            disabled={false}
-            className="bg-red-800 text-white font-bold rounded-md p-2"
+            disabled={isloading}
+            className="bg-red-800 text-white font-bold rounded-md p-2 disabled:bg-red-600"
           >
-            Submit
+            {isloading ? "Loading... " : "Submit"}
           </Button>
         </form>
       </section>
