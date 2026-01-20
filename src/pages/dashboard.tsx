@@ -10,6 +10,7 @@ interface PostData {
   title: string;
   message: string;
   verse: string;
+  says: string;
   img: File | null;
 }
 
@@ -18,6 +19,7 @@ export default function Dashboard() {
     title: "",
     message: "",
     verse: "",
+    says: "",
     img: null,
   });
   const [isloading, setLoading] = useState<boolean>(false);
@@ -34,11 +36,12 @@ export default function Dashboard() {
       await uploadAdminPost({
         title: postData.title,
         message: postData.message,
+        says: postData.says,
         verse: postData.verse,
       });
       setLoading(false);
       // Clear form on success
-      setPostData({ title: "", message: "", verse: "", img: null });
+      setPostData({ title: "", message: "", verse: "", says: "", img: null });
       toast.success("Daily Word published successfully!");
     } catch (error) {
       console.error(error);
@@ -94,6 +97,17 @@ export default function Dashboard() {
             value={postData.verse}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setPostData({ ...postData, verse: e.target.value })
+            }
+          />
+          <label>Says</label>
+          <Input
+            className="p-2 w-full border rounded-md border-gray-200"
+            placeholder="Verse Content"
+            name="says"
+            type="text"
+            value={postData.says}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setPostData({ ...postData, says: e.target.value })
             }
           />
 

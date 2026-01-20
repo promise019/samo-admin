@@ -11,6 +11,7 @@ import { db, auth } from "./firebase";
 interface PostData {
   title: string;
   message: string;
+  says: string;
   verse: string;
 }
 
@@ -28,6 +29,7 @@ export const uploadAdminPost = async (textData: PostData) => {
     title: textData.title,
     message: textData.message,
     verse: textData.verse,
+    says: textData.says,
     adminId: user.uid,
     isAdminPost: true,
     createdAt: serverTimestamp(),

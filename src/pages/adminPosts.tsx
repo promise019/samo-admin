@@ -6,7 +6,7 @@ import { deletePost } from "../lib/storage";
 import { toast } from "react-toastify";
 import Button from "../component/UI/Button";
 
-// Import your static assets
+// Static Assets
 import bible from "../assets/image/bible.jpeg";
 import dove from "../assets/image/dove.jpeg";
 import hand from "../assets/image/hand.jpeg";
@@ -21,6 +21,7 @@ interface AdminPost {
   title: string;
   verse: string;
   message: string;
+  says: string; // Add this field
   createdAt: any;
 }
 
@@ -44,13 +45,13 @@ export default function AdminPostedPosts() {
   }, []);
 
   const handleDelete = async (postId: string) => {
-    if (!window.confirm("Delete this Word?")) return;
+    if (!window.confirm("Are you sure you want to delete this word?")) return;
     setDeletingId(postId);
     try {
       await deletePost(postId);
-      toast.success("Removed from public feed");
+      toast.success("Post removed");
     } catch (error) {
-      toast.error("Failed to delete");
+      toast.error("Delete failed");
     } finally {
       setDeletingId(null);
     }
@@ -59,7 +60,7 @@ export default function AdminPostedPosts() {
   if (loading)
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="animate-spin text-red-900" size={40} />
+        <Loader2 className="animate-spin text-red-900" size={32} />
       </div>
     );
 
@@ -69,65 +70,69 @@ export default function AdminPostedPosts() {
         {posts.map((post, index) => {
           const isExpanded = expandedPost === post.id;
           const isDeleting = deletingId === post.id;
-
-          // Rotate through static images based on index
           const staticBg = bgImages[index % bgImages.length];
 
           return (
             <article
               key={post.id}
-              className="relative h-64 rounded-2xl overflow-hidden shadow-lg transition-transform hover:scale-[1.02]"
+              className="relative h-64 rounded-3xl overflow-hidden shadow-md"
               style={{
                 backgroundImage: `url(${staticBg})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
             >
-              {/* Dark Gradient Overlay for Readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+              {/* Overlay for text contrast */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90" />
 
-              <div className="relative h-full flex flex-col text-white">
-                <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400">
+              <div className="relative h-full flex flex-col text-white p-5">
+                <div className="flex-1 overflow-y-auto no-scrollbar space-y-3">
+                  {/* Verse Reference */}
+                  <span className="text-lg font-bold uppercase tracking-widest text-red-400">
                     {post.verse}
-                  </p>
-                  <h2 className="text-xl font-extrabold leading-tight">
+                  </span>
+
+                  {/* Title */}
+                  <h2 className="text-xl font-bold leading-tight">
                     {post.title}
                   </h2>
-                  <p className="italic text-sm text-gray-100 line-clamp-3">
-                    "{post.message}"
-                  </p>
 
-                  {isExpanded && (
-                    <div className="pt-3 mt-3 border-t border-white/20 animate-in fade-in slide-in-from-top-2">
-                      <p className="text-xs text-gray-300 leading-relaxed">
-                        ID: {post.id} <br />
-                        Published:{" "}
-                        {post.createdAt?.toDate().toLocaleDateString()}
-                      </p>
-                    </div>
+                  {/* Biblical Quote (The "Says" field) */}
+                  {post.says && (
+                    <p className="text-sm font-medium text-gray-100 italic border-l-2 border-red-500 pl-3 py-1">
+                      "{post.says}"
+                    </p>
                   )}
+
+                  {/* Commentary (The "Message" field) */}
+                  <p
+                    className={`text-xs text-gray-300 leading-relaxed ${
+                      !isExpanded && "line-clamp-2 opacity-80"
+                    }`}
+                  >
+                    {post.message}
+                  </p>
                 </div>
 
-                <div className="p-4 flex justify-between items-center bg-black/40 backdrop-blur-md">
+                <div className="mt-4 flex justify-between items-center pt-3 border-t border-white/10">
                   <button
                     onClick={() => setExpandedPost(isExpanded ? null : post.id)}
-                    className="text-xs font-medium hover:underline"
+                    className="text-xs font-semibold text-gray-400 hover:text-white transition-colors"
                   >
-                    {isExpanded ? "Show Less" : "Details"}
+                    {isExpanded ? "Collapse" : "Read Reflection"}
                   </button>
 
                   <Button
                     disabled={isDeleting}
-                    className="flex items-center gap-2 bg-red-700 hover:bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                    className="flex items-center gap-2 bg-red-600/90 hover:bg-red-600 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all"
                     onClick={() => handleDelete(post.id)}
                   >
                     {isDeleting ? (
-                      <Loader2 size={14} className="animate-spin" />
+                      <Loader2 size={12} className="animate-spin" />
                     ) : (
-                      <Trash2 size={14} />
+                      <Trash2 size={12} />
                     )}
-                    {isDeleting ? "Deleting..." : "Delete"}
+                    {isDeleting ? "..." : "Delete"}
                   </Button>
                 </div>
               </div>
@@ -135,6 +140,12 @@ export default function AdminPostedPosts() {
           );
         })}
       </div>
+
+      {posts.length === 0 && (
+        <div className="text-center py-20 text-gray-400">
+          No live posts found in the feed.
+        </div>
+      )}
     </section>
   );
 }
