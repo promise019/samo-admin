@@ -6,7 +6,7 @@ export default function AdminDashboard() {
   return (
     <main className="w-full min-h-screen flex">
       <NavBar />
-      <main className="w-[90%]">
+      <main className="w-screen md:w-[90%]">
         <Header />
         <Outlet />
       </main>
