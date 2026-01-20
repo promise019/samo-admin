@@ -11,7 +11,7 @@ export default function AuthenticationPage() {
       className="bg-[] w-screen h-screen md:flex justify-center px-3 overflow-hidden pt-10 
     md:px-25 md:pt-0 md:items-center lg:px-55 xl:px-40 space-y-10"
     >
-      <div className="flex space-x-2 mb-5 md:absolute top-5 left-5">
+      <div className="flex space-x-2 mb-21 md:absolute top-5 left-5">
         <img src={Logo} alt="logo" className="w-10" />
         <h1 className="font-bold text-red-950 mt-2 text-xl">Daily Starters</h1>
       </div>
