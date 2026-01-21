@@ -1,11 +1,10 @@
 import { useState } from "react";
 import Input from "../component/UI/Input";
-// import ImagePreview from "../component/UI/imagePreview";
 import Button from "../component/UI/Button";
 import type { ChangeEvent, FormEvent } from "react";
 import { uploadAdminPost } from "../lib/storage";
 import { toast, ToastContainer } from "react-toastify";
-import { Loader2 } from "lucide-react";
+import { Loader2, PenLine } from "lucide-react";
 
 interface PostData {
   title: string;
@@ -27,119 +26,138 @@ export default function Dashboard() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!postData.title || !postData.message || !postData.verse) {
       return toast.warn("Please fill in all fields");
     }
     setLoading(true);
     try {
-      // Mapping your component's 'message' to the logic's 'content'
       await uploadAdminPost({
         title: postData.title,
         message: postData.message,
         says: postData.says,
         verse: postData.verse,
       });
-      setLoading(false);
-      // Clear form on success
       setPostData({ title: "", message: "", verse: "", says: "", img: null });
       toast.success("Daily Word published successfully!");
     } catch (error) {
       console.error(error);
-      setLoading(false);
-      toast.error("Failed to publish. Ensure you are logged in as Admin.");
+      toast.error("Failed to publish. Check permissions.");
     } finally {
       setLoading(false);
     }
-    console.log(postData);
-    // Firebase logic later
   };
 
   return (
-    <div className="pb-22 p-5 space-y-4 bg-gray-50">
-      <ToastContainer />
-      {/* Stats */}
-      <section className="text-white flex w-full justify-between space-x-4">
+    <div className="pb-24 p-4 md:p-6 space-y-5 bg-gray-50 min-h-screen">
+      <ToastContainer position="top-center" autoClose={3000} />
+
+      {/* COMPACT STATS SECTION */}
+      <section className="grid grid-cols-3 gap-2 md:gap-4">
         {[
-          { value: "15.2k", label: "Total Site Views" },
-          { value: "1.2k", label: "Devotional Engagement" },
-          { value: "805", label: "Post Shares" },
+          { value: "15.2k", label: "Views", color: "bg-red-950" },
+          { value: "1.2k", label: "Engage", color: "bg-red-900" },
+          { value: "805", label: "Shares", color: "bg-stone-900" },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-2xl p-4 bg-red-950 w-full">
-            <h1 className="text-3xl font-extrabold">{stat.value}</h1>
-            <h1>{stat.label}</h1>
+          <div
+            key={stat.label}
+            className={`${stat.color} text-white rounded-2xl p-3 md:p-5 shadow-sm`}
+          >
+            <h1 className="text-xl md:text-3xl font-black">{stat.value}</h1>
+            <p className="text-[10px] md:text-xs uppercase tracking-wider opacity-70 font-medium">
+              {stat.label}
+            </p>
           </div>
         ))}
       </section>
 
-      {/* Form */}
-      <section className="bg-white p-3 rounded-2xl">
-        <h1 className="font-bold">Create New Daily Word</h1>
+      {/* COMPACT FORM SECTION */}
+      <section className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="p-2 bg-red-50 rounded-lg">
+            <PenLine size={18} className="text-red-800" />
+          </div>
+          <h1 className="font-bold text-gray-800">New Daily Word</h1>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-3 space-y-3">
-          <label>Title</label>
-          <Input
-            className="p-2 w-full border rounded-md border-gray-200"
-            placeholder="Enter Title"
-            name="title"
-            type="text"
-            value={postData.title}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setPostData({ ...postData, title: e.target.value })
-            }
-          />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Row 1: Title & Verse side-by-side */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+                Title
+              </label>
+              <Input
+                className="p-2.5 w-full border rounded-xl border-gray-200 focus:ring-2 focus:ring-red-800 outline-none transition-all text-sm"
+                placeholder="Ex: Faith"
+                name="title"
+                type="text"
+                value={postData.title}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setPostData({ ...postData, title: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+                Verse
+              </label>
+              <Input
+                className="p-2.5 w-full border rounded-xl border-gray-200 focus:ring-2 focus:ring-red-800 outline-none transition-all text-sm"
+                placeholder="John 3:16"
+                name="verse"
+                type="text"
+                value={postData.verse}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setPostData({ ...postData, verse: e.target.value })
+                }
+              />
+            </div>
+          </div>
 
-          <label>Verse</label>
-          <Input
-            className="p-2 w-full border rounded-md border-gray-200"
-            placeholder="Bible Verse"
-            name="verse"
-            type="text"
-            value={postData.verse}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setPostData({ ...postData, verse: e.target.value })
-            }
-          />
-          <label>Says</label>
-          <Input
-            className="p-2 w-full border rounded-md border-gray-200"
-            placeholder="Verse Content"
-            name="says"
-            type="text"
-            value={postData.says}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setPostData({ ...postData, says: e.target.value })
-            }
-          />
+          {/* Row 2: Says (The specific scripture text) */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+              Scripture Text
+            </label>
+            <Input
+              className="p-2.5 w-full border rounded-xl border-gray-200 focus:ring-2 focus:ring-red-800 outline-none transition-all text-sm"
+              placeholder="For God so loved the world..."
+              name="says"
+              type="text"
+              value={postData.says}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setPostData({ ...postData, says: e.target.value })
+              }
+            />
+          </div>
 
-          <label>Content</label>
-          <textarea
-            className="p-2 w-full border border-gray-200 rounded-md h-32 resize-none"
-            placeholder="Your Message..."
-            value={postData.message}
-            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-              setPostData({ ...postData, message: e.target.value })
-            }
-          />
-
-          {/* <label>Image</label>
-          <ImagePreview
-            image={postData.img}
-            onChange={(file) => setPostData({ ...postData, img: file })}
-          /> */}
+          {/* Row 3: Message Content */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+              Reflection / Content
+            </label>
+            <textarea
+              className="p-3 w-full border border-gray-200 rounded-xl h-24 md:h-32 resize-none focus:ring-2 focus:ring-red-800 outline-none transition-all text-sm no-scrollbar"
+              placeholder="What is God saying today?"
+              value={postData.message}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                setPostData({ ...postData, message: e.target.value })
+              }
+            />
+          </div>
 
           <Button
             type="submit"
             disabled={isloading}
-            className="bg-red-800 text-white font-bold rounded-md p-2 disabled:bg-red-600"
+            className="w-full bg-red-800 hover:bg-red-900 text-white font-bold rounded-xl p-3 shadow-lg shadow-red-900/20 transition-all active:scale-[0.98] disabled:opacity-70 mt-2"
           >
             {isloading ? (
               <div className="flex items-center justify-center gap-2">
                 <Loader2 className="animate-spin" size={20} />
-                <span>Posting...</span>
+                <span>Publishing...</span>
               </div>
             ) : (
-              "Submit"
+              "Publish Word"
             )}
           </Button>
         </form>
