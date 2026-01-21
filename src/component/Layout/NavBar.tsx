@@ -2,7 +2,6 @@ import {
   AlignStartVerticalIcon,
   LayoutDashboardIcon,
   PodcastIcon,
-  Settings,
 } from "lucide-react";
 import { NavLink } from "react-router";
 import logo from "../../assets/image/Group 1 (2).svg";
@@ -40,7 +39,7 @@ export default function NavBar() {
         <h1 className="lg:inline-block">Posts</h1>
       </NavLink>
       <NavLink
-        to="statistics"
+        to="analytics"
         className={({ isActive }) =>
           `rounded-full grid grid-cols-1 justify-items-center text-center p-2 md:rounded-l-none md:flex md:items-center md:justify-start md:text-left md:space-x-2 
           lg:p-3 md:rounded-r-lg ${isActive ? "bg-red-900 text-white font-bold" : "text-gray-400"}`
@@ -48,16 +47,6 @@ export default function NavBar() {
       >
         <AlignStartVerticalIcon />
         <h1 className="lg:inline-block">Statistics</h1>
-      </NavLink>
-      <NavLink
-        to="settings"
-        className={({ isActive }) =>
-          `rounded-full grid grid-cols-1 justify-items-center text-center p-2 md:rounded-l-none md:flex md:items-center md:justify-start md:text-left md:space-x-2 
-          lg:p-3 md:rounded-r-lg ${isActive ? "bg-red-900 text-white font-bold" : "text-gray-400"}`
-        }
-      >
-        <Settings />
-        <h1 className="lg:inline-block">Settings</h1>
       </NavLink>
     </nav>
   );

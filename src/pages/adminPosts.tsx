@@ -75,6 +75,33 @@ export default function AdminPostedPosts() {
     return () => unsubscribeAuth();
   }, []);
 
+  // --- LOGIC FUNCTIONS ---
+
+  const handleShare = async (post: AdminPost) => {
+    const shareData = {
+      title: post.title,
+      text: `Daily Word: ${post.title}\n"${post.says}"\n\nRead more at:`,
+      url: window.location.origin,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Share cancelled");
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(
+          `${shareData.text} ${shareData.url}`,
+        );
+        toast.success("Link copied to clipboard!");
+      } catch (err) {
+        toast.error("Failed to copy link");
+      }
+    }
+  };
+
   const handleEditClick = (post: AdminPost) => {
     setEditingId(post.id);
     setEditForm({ ...post });
@@ -119,7 +146,6 @@ export default function AdminPostedPosts() {
       </div>
     );
 
-  // Separate the latest post from the rest
   const [latestPost, ...olderPosts] = posts;
 
   return (
@@ -145,6 +171,7 @@ export default function AdminPostedPosts() {
             onCancel={() => setEditingId(null)}
             onUpdate={handleUpdate}
             onDelete={() => handleDelete(latestPost.id)}
+            onShare={() => handleShare(latestPost)}
             onToggleExpand={() =>
               setExpandedPost(
                 expandedPost === latestPost.id ? null : latestPost.id,
@@ -177,6 +204,7 @@ export default function AdminPostedPosts() {
                 onCancel={() => setEditingId(null)}
                 onUpdate={handleUpdate}
                 onDelete={() => handleDelete(post.id)}
+                onShare={() => handleShare(post)}
                 onToggleExpand={() =>
                   setExpandedPost(expandedPost === post.id ? null : post.id)
                 }
@@ -212,6 +240,7 @@ function PostCard({
   onCancel,
   onUpdate,
   onDelete,
+  onShare,
   onToggleExpand,
 }: any) {
   const staticBg = bgImages[index % bgImages.length];
@@ -320,7 +349,7 @@ function PostCard({
                 </button>
                 <button
                   className="text-sm font-bold text-gray-400 hover:text-green-400 flex items-center gap-1 transition-colors"
-                  onClick={() => console.log("Sharing coming soon...")}
+                  onClick={onShare}
                 >
                   <Share2 size={16} /> Share
                 </button>
