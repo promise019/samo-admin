@@ -1,7 +1,13 @@
 import { Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import { auth, db } from "../lib/firebase";
 import { deletePost } from "../lib/storage";
 import { toast } from "react-toastify";
 import Button from "../component/UI/Button";
@@ -32,16 +38,44 @@ export default function AdminPostedPosts() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedPosts = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as AdminPost[];
-      setPosts(fetchedPosts);
-      setLoading(false);
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      console.log("Auth state changed, user:", user?.uid); // DEBUG 1
+
+      if (user) {
+        const q = query(
+          collection(db, "posts"),
+          where("adminId", "==", user.uid),
+          orderBy("createdAt", "desc"),
+        );
+
+        const unsubscribePosts = onSnapshot(
+          q,
+          (snapshot) => {
+            console.log("Snapshot received, docs count:", snapshot.docs.length); // DEBUG 2
+
+            const fetchedPosts = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            })) as AdminPost[];
+
+            setPosts(fetchedPosts);
+            setLoading(false);
+          },
+          (error) => {
+            // If this logs "Missing Index", follow the link in the console
+            console.error("Firestore Error:", error);
+            setLoading(false);
+          },
+        );
+
+        return () => unsubscribePosts();
+      } else {
+        setPosts([]);
+        setLoading(false);
+      }
     });
-    return () => unsubscribe();
+
+    return () => unsubscribeAuth();
   }, []);
 
   const handleDelete = async (postId: string) => {

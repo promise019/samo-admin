@@ -18,7 +18,7 @@ export default function AuthenticationPage() {
         <div className="flex space-x-2 mb-21 md:absolute top-5 left-5">
           <img src={Logo} alt="logo" className="w-10" />
           <h1 className="font-bold text-red-950 mt-2 text-xl">
-            Daily Starters
+            Thought Starters
           </h1>
         </div>
         <div

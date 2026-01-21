@@ -114,7 +114,7 @@ export default function Login() {
             <span>Creating Account...</span>
           </div>
         ) : (
-          "Create Account"
+          "Sign In"
         )}{" "}
       </Button>
 

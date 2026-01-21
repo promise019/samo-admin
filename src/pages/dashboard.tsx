@@ -5,6 +5,7 @@ import Button from "../component/UI/Button";
 import type { ChangeEvent, FormEvent } from "react";
 import { uploadAdminPost } from "../lib/storage";
 import { toast, ToastContainer } from "react-toastify";
+import { Loader2 } from "lucide-react";
 
 interface PostData {
   title: string;
@@ -55,7 +56,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="pb-17 p-5 space-y-4 bg-gray-50">
+    <div className="pb-22 p-5 space-y-4 bg-gray-50">
       <ToastContainer />
       {/* Stats */}
       <section className="text-white flex w-full justify-between space-x-4">
@@ -132,7 +133,14 @@ export default function Dashboard() {
             disabled={isloading}
             className="bg-red-800 text-white font-bold rounded-md p-2 disabled:bg-red-600"
           >
-            {isloading ? "Loading... " : "Submit"}
+            {isloading ? (
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="animate-spin" size={20} />
+                <span>Posting...</span>
+              </div>
+            ) : (
+              "Submit"
+            )}
           </Button>
         </form>
       </section>
