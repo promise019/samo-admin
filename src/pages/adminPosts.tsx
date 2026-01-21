@@ -346,14 +346,14 @@ function PostCard({
               <Button
                 disabled={isDeleting}
                 onClick={onDelete}
-                className="bg-red-600/20 hover:bg-red-600 border border-red-600/50 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all"
+                className="bg-red-600/20 hover:bg-red-600 border border-red-600/50 px-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all"
               >
                 {isDeleting ? (
                   <Loader2 size={14} className="animate-spin" />
                 ) : (
                   <Trash2 size={14} />
                 )}
-                {isDeleting ? "..." : "Delete"}
+                {isDeleting ? "..." : ""}
               </Button>
             )}
           </div>
