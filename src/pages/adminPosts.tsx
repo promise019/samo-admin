@@ -78,9 +78,16 @@ export default function AdminPostedPosts() {
   // --- LOGIC FUNCTIONS ---
 
   const handleShare = async (post: AdminPost) => {
+    const fullMessage =
+      `📖 *${post.title}*\n\n` +
+      `📍 Verse: ${post.verse}\n` +
+      `💬 "${post.says}"\n\n` +
+      `📝 Reflection:\n${post.message}\n\n` +
+      `Read more at:`;
+
     const shareData = {
       title: post.title,
-      text: `Daily Word: ${post.title}\n"${post.says}"\n\nRead more at:`,
+      text: fullMessage,
       url: window.location.origin,
     };
 
