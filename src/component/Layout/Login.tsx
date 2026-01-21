@@ -67,9 +67,9 @@ export default function Login() {
     }
   };
 
-  const forgottenPassword = () => {
-    console.log("Forgot password clicked");
-  };
+  // const forgottenPassword = () => {
+  //   console.log("Forgot password clicked");
+  // };
 
   return (
     <form onSubmit={submitForm} className="space-y-4">
@@ -118,13 +118,13 @@ export default function Login() {
         )}{" "}
       </Button>
 
-      <Button
+      {/* <Button
         type="button"
         className="italic font-bold text-right"
         onClick={forgottenPassword}
       >
         Forgotten password
-      </Button>
+      </Button> */}
     </form>
   );
 }

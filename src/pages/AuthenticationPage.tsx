@@ -1,13 +1,13 @@
-import { useState } from "react";
+// import { useState } from "react";
 import Login from "../component/Layout/Login";
-import Button from "../component/UI/Button";
+// import Button from "../component/UI/Button";
 import Logo from "../assets/image/Group 1 (2).svg";
-import Signup from "../component/Layout/Signup";
+// import Signup from "../component/Layout/Signup";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function AuthenticationPage() {
-  const [LoginPage, setPage] = useState<boolean>(true);
+  // const [LoginPage, setPage] = useState<boolean>(true);
   return (
     <>
       <ToastContainer position="top-right" theme="colored" />
@@ -25,15 +25,11 @@ export default function AuthenticationPage() {
           className=" rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] w-full h-fit p-4 space-y-3
       md:p-10 xl:w-130"
         >
-          {LoginPage ? (
-            <>
-              <Login />
-            </>
-          ) : (
-            <>
-              <Signup />
-            </>
-          )}
+          {/* {LoginPage ? ( */}
+          <>
+            <Login />
+          </>
+
           {/* <br />
         <Button className="p-3 h-fit w-fit self-center">
           <img
@@ -42,7 +38,7 @@ export default function AuthenticationPage() {
             className="w-9 h-9 bg-white rounded-md"
           />
         </Button> */}
-          <p className="text-center">
+          {/* <p className="text-center">
             {LoginPage ? (
               <>
                 {" "}
@@ -67,7 +63,7 @@ export default function AuthenticationPage() {
                 </Button>
               </>
             )}
-          </p>
+          </p> */}
         </div>
         {/* <Welcome /> */}
       </div>
