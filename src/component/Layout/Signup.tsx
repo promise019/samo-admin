@@ -10,6 +10,7 @@ import {
 } from "../../lib/checkInput";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 interface UserData {
   userName: string;
@@ -23,6 +24,10 @@ export default function Signup() {
     email: "",
     password: "",
   });
+  const [confirmPassword, setConfirmpassword] = useState<string>("");
+  const [showPassword, setShowpassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmpassword] =
+    useState<boolean>(false);
 
   const [isloading, setIsloading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -62,6 +67,11 @@ export default function Signup() {
       return;
     }
 
+    if (userData.password !== confirmPassword) {
+      setErrorMsg("Password does not match");
+      return;
+    }
+
     console.log(userData);
 
     try {
@@ -75,7 +85,7 @@ export default function Signup() {
       setIsloading(false);
       if (error.code === "auth/email-already-in-use") {
         setErrorMsg(
-          "This email is already registered. Try logging in instead."
+          "This email is already registered. Try logging in instead.",
         );
         toast.error("Email already in use");
       } else {
@@ -109,14 +119,49 @@ export default function Signup() {
           placeholder="Email (e.g john@gmail.com)"
         />
 
-        <Input
-          type="password"
-          className="w-full rounded-md p-3 border border-gray-600"
-          onChange={handleChange}
-          value={userData.password}
-          name="password"
-          placeholder="Password"
-        />
+        <section className="relative">
+          {showPassword ? (
+            <EyeOff
+              className="absolute right-2 top-3"
+              onClick={() => setShowpassword(false)}
+            />
+          ) : (
+            <Eye
+              className="absolute right-2 top-3"
+              onClick={() => setShowpassword(true)}
+            />
+          )}
+          <Input
+            type={showPassword ? "text" : "password"}
+            className="w-full rounded-md p-3 border border-gray-600"
+            onChange={handleChange}
+            value={userData.password}
+            name="password"
+            placeholder="Password"
+          />
+        </section>
+
+        <section className="relative">
+          {showConfirmPassword ? (
+            <EyeOff
+              className="absolute right-2 top-3"
+              onClick={() => setShowConfirmpassword(false)}
+            />
+          ) : (
+            <Eye
+              className="absolute right-2 top-3"
+              onClick={() => setShowConfirmpassword(true)}
+            />
+          )}
+          <Input
+            type={showConfirmPassword ? "text" : "password"}
+            className="w-full rounded-md p-3 border border-gray-600"
+            onChange={(e) => setConfirmpassword(e.target.value)}
+            value={confirmPassword}
+            name="password"
+            placeholder="confirm password"
+          />
+        </section>
 
         <Button
           disabled={isloading ? true : false}
@@ -124,7 +169,14 @@ export default function Signup() {
           className="w-full bg-red-800 rounded-md p-3 font-bold text-white disabled:bg-red-500"
           // onClick={(e) => submitForm(e)}
         >
-          {isloading ? "Loading...." : " Create Account"}
+          {isloading ? (
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="animate-spin" size={20} />
+              <span>Creating Account...</span>
+            </div>
+          ) : (
+            "Create Account"
+          )}
         </Button>
       </form>
     </>
