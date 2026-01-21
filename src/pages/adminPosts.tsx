@@ -88,7 +88,7 @@ export default function AdminPostedPosts() {
     const shareData = {
       title: post.title,
       text: fullMessage,
-      url: window.location.origin,
+      url: "https://bible-posts-yk2m.vercel.app/",
     };
 
     if (navigator.share) {
