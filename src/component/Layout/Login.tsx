@@ -5,6 +5,7 @@ import type { FormEvent, ChangeEvent } from "react";
 import { toast } from "react-toastify";
 import { signIn } from "../../lib/auth";
 import { useNavigate } from "react-router";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 interface UserData {
   email: string;
@@ -17,6 +18,8 @@ export default function Login() {
     password: "",
   });
   const [isloading, setIsloading] = useState(false);
+  const [showPassword, setShowpassword] = useState<boolean>(false);
+
   const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -79,20 +82,40 @@ export default function Login() {
         placeholder="Email (e.g john@gmail.com)"
       />
 
-      <Input
-        type="password"
-        className="w-full rounded-md p-3 border border-gray-600"
-        onChange={handleChange}
-        value={userData.password}
-        name="password"
-        placeholder="Password"
-      />
+      <section className="relative">
+        {showPassword ? (
+          <EyeOff
+            className="absolute right-2 top-3"
+            onClick={() => setShowpassword(false)}
+          />
+        ) : (
+          <Eye
+            className="absolute right-2 top-3"
+            onClick={() => setShowpassword(true)}
+          />
+        )}
+        <Input
+          type={showPassword ? "text" : "password"}
+          className="w-full rounded-md p-3 border border-gray-600"
+          onChange={handleChange}
+          value={userData.password}
+          name="password"
+          placeholder="Password"
+        />
+      </section>
 
       <Button
         type="submit"
         className="w-full bg-red-800 rounded-md p-3 font-bold text-white"
       >
-        {isloading ? "Loading..." : "Login"}
+        {isloading ? (
+          <div className="flex items-center justify-center gap-2">
+            <Loader2 className="animate-spin" size={20} />
+            <span>Creating Account...</span>
+          </div>
+        ) : (
+          "Create Account"
+        )}{" "}
       </Button>
 
       <Button
