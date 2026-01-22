@@ -14,7 +14,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { deletePost, updatePost } from "../lib/storage";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import Button from "../component/UI/Button";
 
 // Static Assets
@@ -172,6 +172,7 @@ export default function AdminPostedPosts() {
 
   return (
     <section className="pb-26 px-4 md:p-6 bg-gray-50 min-h-screen space-y-10">
+      <ToastContainer />
       {latestPost && (
         <div className="w-full max-w-7xl mx-auto">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
