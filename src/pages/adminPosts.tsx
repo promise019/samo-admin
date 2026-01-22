@@ -6,6 +6,7 @@ import {
   orderBy,
   query,
   where,
+  Timestamp,
 } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { deletePost, updatePost } from "../lib/storage";
@@ -29,6 +30,9 @@ interface AdminPost {
   message: string;
   says: string;
   createdAt: any;
+  publishedAt?: Timestamp | any;
+  isAdminPost?: boolean;
+  status?: string;
 }
 
 export default function AdminPostedPosts() {
@@ -36,8 +40,6 @@ export default function AdminPostedPosts() {
   const [loading, setLoading] = useState(true);
   const [expandedPost, setExpandedPost] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  // Edit States
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<AdminPost | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -45,37 +47,42 @@ export default function AdminPostedPosts() {
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
+        // Query matches the fields we just ensured exist
         const q = query(
           collection(db, "posts"),
           where("adminId", "==", user.uid),
-          orderBy("createdAt", "desc"),
+          orderBy("publishedAt", "desc"),
         );
 
-        const unsubscribePosts = onSnapshot(
-          q,
-          (snapshot) => {
-            const fetchedPosts = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            })) as AdminPost[];
-            setPosts(fetchedPosts);
-            setLoading(false);
-          },
-          (error) => {
-            console.error("Firestore Error:", error);
-            setLoading(false);
-          },
-        );
+        const unsubscribePosts = onSnapshot(q, (snapshot) => {
+          const now = new Date();
+
+          const fetchedPosts = snapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }) as AdminPost)
+            .filter((post) => {
+              // 1. Dashboard posts (isAdminPost: true) show immediately
+              if (post.isAdminPost === true) return true;
+
+              // 2. Scheduled posts (status: "scheduled") check the clock
+              if (!post.publishedAt) return false;
+
+              const postDate =
+                post.publishedAt instanceof Timestamp
+                  ? post.publishedAt.toDate()
+                  : new Date(post.publishedAt);
+
+              // Standard safety buffer for scheduled items
+              return postDate.getTime() <= now.getTime() + 60000;
+            });
+
+          setPosts(fetchedPosts);
+          setLoading(false);
+        });
         return () => unsubscribePosts();
-      } else {
-        setPosts([]);
-        setLoading(false);
       }
     });
     return () => unsubscribeAuth();
   }, []);
-
-  // --- LOGIC FUNCTIONS ---
 
   const handleShare = async (post: AdminPost) => {
     const fullMessage =
@@ -157,7 +164,6 @@ export default function AdminPostedPosts() {
 
   return (
     <section className="pb-26 px-4 md:p-6 bg-gray-50 min-h-screen space-y-10">
-      {/* LATEST POST - HERO SECTION */}
       {latestPost && (
         <div className="w-full max-w-7xl mx-auto">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -188,7 +194,6 @@ export default function AdminPostedPosts() {
         </div>
       )}
 
-      {/* OLDER POSTS - GRID SECTION */}
       {olderPosts.length > 0 && (
         <div className="max-w-7xl mx-auto space-y-6">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2">
@@ -230,9 +235,7 @@ export default function AdminPostedPosts() {
   );
 }
 
-/**
- * REUSABLE CARD COMPONENT
- */
+// PostCard Component (Exactly as you had it)
 function PostCard({
   post,
   index,
@@ -273,28 +276,28 @@ function PostCard({
                 className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-xs text-red-400 font-bold uppercase outline-none focus:border-red-500"
                 value={editForm?.verse}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, verse: e.target.value })
+                  setEditForm({ ...editForm!, verse: e.target.value })
                 }
               />
               <input
                 className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-lg font-bold outline-none focus:border-white/50"
                 value={editForm?.title}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, title: e.target.value })
+                  setEditForm({ ...editForm!, title: e.target.value })
                 }
               />
               <textarea
                 className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-sm h-16 resize-none"
                 value={editForm?.says}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, says: e.target.value })
+                  setEditForm({ ...editForm!, says: e.target.value })
                 }
               />
               <textarea
                 className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-sm h-32 resize-none"
                 value={editForm?.message}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, message: e.target.value })
+                  setEditForm({ ...editForm!, message: e.target.value })
                 }
               />
             </div>
@@ -326,7 +329,6 @@ function PostCard({
           )}
         </div>
 
-        {/* ACTIONS */}
         <div className="mt-6 flex justify-between items-center pt-5 border-t border-white/10">
           <div className="flex gap-4 md:gap-8 items-center">
             {isEditing ? (

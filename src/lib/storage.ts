@@ -14,25 +14,32 @@ interface PostData {
   message: string;
   says: string;
   verse: string;
+  // Add these as optional so they don't break the updatePost function
+  publishedAt?: Date | any;
+  createdAt?: Date | any;
+  status?: string;
+  adminId?: string;
+  isAdminPost: boolean;
 }
 
 export const uploadAdminPost = async (textData: PostData) => {
   const user = auth.currentUser;
 
-  // 1. DYNAMIC CHECK: Ensure someone is logged in
   if (!user) {
     throw new Error("Unauthorized: Please log in to post.");
   }
 
-  // 2. Save with the current user's UID
+  // FIXED: We now include publishedAt and status so the query can "see" the post
   const docRef = await addDoc(collection(db, "posts"), {
     title: textData.title,
     message: textData.message,
     verse: textData.verse,
     says: textData.says,
-    adminId: user.uid, // This links the post to the specific admin
+    adminId: user.uid,
     isAdminPost: true,
-    createdAt: serverTimestamp(),
+    createdAt: textData.createdAt || serverTimestamp(),
+    publishedAt: textData.publishedAt, // CRITICAL: This was missing
+    status: textData.status || "published", // CRITICAL: This was missing
   });
 
   return docRef.id;

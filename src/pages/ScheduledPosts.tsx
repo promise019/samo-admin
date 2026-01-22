@@ -45,9 +45,10 @@ export default function ScheduledPosts() {
   });
 
   useEffect(() => {
+    // We query for posts where publishedAt is in the FUTURE
     const q = query(
       collection(db, "posts"),
-      where("publishedAt", ">", new Date()),
+      where("publishedAt", ">", Timestamp.now()),
       orderBy("publishedAt", "asc"),
     );
 
@@ -62,7 +63,8 @@ export default function ScheduledPosts() {
         setLoading(false);
       },
       (error) => {
-        console.error("Snapshot Error:", error);
+        console.error("Firestore Error:", error);
+        // If this logs an error about "Index", click the link in your console!
         setLoading(false);
       },
     );
@@ -72,27 +74,28 @@ export default function ScheduledPosts() {
 
   const handleSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsPublishing(true);
-
     if (
       !formData.title.trim() ||
       !formData.message.trim() ||
       !formData.scheduledAt
     ) {
       toast.warn("Required fields missing");
-      setIsPublishing(false);
       return;
     }
 
+    setIsPublishing(true);
     try {
       const user = auth.currentUser;
       const selectedDate = new Date(formData.scheduledAt);
 
       await addDoc(collection(db, "posts"), {
-        ...formData,
+        title: formData.title,
+        message: formData.message,
+        verse: formData.verse,
+        says: formData.says,
         adminId: user?.uid,
         createdAt: serverTimestamp(),
-        publishedAt: Timestamp.fromDate(selectedDate),
+        publishedAt: Timestamp.fromDate(selectedDate), // Save as Firestore Timestamp
         status: "scheduled",
       });
 
@@ -104,7 +107,7 @@ export default function ScheduledPosts() {
         says: "",
         scheduledAt: "",
       });
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Failed to save post");
     } finally {
       setIsPublishing(false);
@@ -122,11 +125,10 @@ export default function ScheduledPosts() {
   };
 
   return (
-    // Added overflow-x-hidden to the parent container
     <div className="p-3 sm:p-6 md:p-8 bg-gray-50 min-h-screen space-y-6 pb-24 overflow-x-hidden">
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
 
-      {/* HEADER - Adjusted spacing for tight screens */}
+      {/* HEADER */}
       <div className="flex items-center gap-3 max-w-6xl mx-auto px-1">
         <div className="p-2 sm:p-3 bg-amber-100 text-amber-700 rounded-xl sm:rounded-2xl">
           <Clock size={20} className="sm:w-6 sm:h-6" />
@@ -136,13 +138,13 @@ export default function ScheduledPosts() {
             Post Queue
           </h1>
           <p className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase opacity-60">
-            Future Content
+            Currently Scheduled
           </p>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4 sm:gap-8 max-w-6xl mx-auto items-start">
-        {/* LEFT: FORM - Reduced rounding/padding on mobile */}
+        {/* LEFT: FORM (Former UI Style) */}
         <section className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-gray-100">
           <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm sm:text-base">
             <Calendar size={16} className="text-amber-600" /> New Schedule
@@ -215,7 +217,7 @@ export default function ScheduledPosts() {
           </form>
         </section>
 
-        {/* RIGHT: LIST - Optimized for long text on small screens */}
+        {/* RIGHT: LIST (Former UI Style) */}
         <section className="space-y-3">
           <h2 className="font-bold text-gray-400 uppercase text-[10px] tracking-[0.2em] px-2 flex justify-between">
             Queue <span>{scheduledPosts.length}</span>
@@ -228,7 +230,7 @@ export default function ScheduledPosts() {
           ) : scheduledPosts.length === 0 ? (
             <div className="bg-white rounded-2xl sm:rounded-[3rem] p-10 sm:p-20 text-center border-2 border-dashed border-gray-100 flex flex-col items-center gap-2">
               <AlertCircle size={32} className="text-gray-200" />
-              <p className="text-xs sm:text-sm text-gray-400 font-medium tracking-tight">
+              <p className="text-xs sm:text-sm text-gray-400 font-medium">
                 No pending posts
               </p>
             </div>
@@ -242,17 +244,20 @@ export default function ScheduledPosts() {
                   <div className="min-w-0 flex-1 pr-2">
                     <div className="flex items-center gap-1.5 text-[9px] font-black text-amber-600 uppercase mb-0.5">
                       <Clock size={10} />
-                      {post.publishedAt?.toDate().toLocaleString([], {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {/* Check if toDate exists to avoid crashes */}
+                      {post.publishedAt?.toDate
+                        ? post.publishedAt.toDate().toLocaleString([], {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "Invalid Date"}
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm sm:text-base truncate">
                       {post.title}
                     </h3>
-                    <p className="text-[10px] sm:text-xs text-gray-400 italic truncate opacity-80">
+                    <p className="text-[10px] sm:text-xs text-gray-400 italic truncate">
                       {post.verse}
                     </p>
                   </div>
