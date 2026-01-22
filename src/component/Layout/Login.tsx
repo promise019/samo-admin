@@ -111,7 +111,7 @@ export default function Login() {
         {isloading ? (
           <div className="flex items-center justify-center gap-2">
             <Loader2 className="animate-spin" size={20} />
-            <span>Creating Account...</span>
+            <span>Signing In...</span>
           </div>
         ) : (
           "Sign In"

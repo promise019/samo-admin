@@ -7,6 +7,9 @@ import {
   query,
   where,
   Timestamp,
+  doc,
+  updateDoc,
+  increment,
 } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { deletePost, updatePost } from "../lib/storage";
@@ -47,7 +50,6 @@ export default function AdminPostedPosts() {
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
-        // Query matches the fields we just ensured exist
         const q = query(
           collection(db, "posts"),
           where("adminId", "==", user.uid),
@@ -56,22 +58,15 @@ export default function AdminPostedPosts() {
 
         const unsubscribePosts = onSnapshot(q, (snapshot) => {
           const now = new Date();
-
           const fetchedPosts = snapshot.docs
             .map((doc) => ({ id: doc.id, ...doc.data() }) as AdminPost)
             .filter((post) => {
-              // 1. Dashboard posts (isAdminPost: true) show immediately
               if (post.isAdminPost === true) return true;
-
-              // 2. Scheduled posts (status: "scheduled") check the clock
               if (!post.publishedAt) return false;
-
               const postDate =
                 post.publishedAt instanceof Timestamp
                   ? post.publishedAt.toDate()
                   : new Date(post.publishedAt);
-
-              // Standard safety buffer for scheduled items
               return postDate.getTime() <= now.getTime() + 60000;
             });
 
@@ -84,32 +79,38 @@ export default function AdminPostedPosts() {
     return () => unsubscribeAuth();
   }, []);
 
+  // --- REFINED SUCCESSFUL SHARE LOGIC ---
   const handleShare = async (post: AdminPost) => {
-    const fullMessage =
-      `📖 *${post.title}*\n\n` +
-      `📍 Verse: ${post.verse}\n` +
-      `💬 "${post.says}"\n\n` +
-      `📝 Reflection:\n${post.message}\n\n` +
-      `Read more at:`;
-
     const shareData = {
       title: post.title,
-      text: fullMessage,
+      text: `📖 *${post.title}*\n\n"${post.says}"\n\nRead more at:`,
       url: "https://bible-posts-yk2m.vercel.app/",
     };
 
+    const statsRef = doc(db, "siteStats", "metadata");
+
     if (navigator.share) {
       try {
+        // Waits for the user to actually complete the share action
         await navigator.share(shareData);
-      } catch (err) {
-        console.log("Share cancelled");
+
+        // ONLY increments on success
+        await updateDoc(statsRef, { shares: increment(1) });
+        console.log("[Stats] Global share recorded");
+      } catch (err: any) {
+        // Check if user clicked "Cancel" (AbortError)
+        if (err.name !== "AbortError") {
+          console.error("Share failed:", err);
+        }
       }
     } else {
+      // Desktop fallback (Clipboard)
       try {
         await navigator.clipboard.writeText(
           `${shareData.text} ${shareData.url}`,
         );
-        toast.success("Link copied to clipboard!");
+        await updateDoc(statsRef, { shares: increment(1) });
+        toast.success("Link copied! Share it with friends.");
       } catch (err) {
         toast.error("Failed to copy link");
       }
@@ -141,7 +142,7 @@ export default function AdminPostedPosts() {
   };
 
   const handleDelete = async (postId: string) => {
-    if (!window.confirm("Are you sure you want to delete this?")) return;
+    if (!window.confirm("Are you sure?")) return;
     setDeletingId(postId);
     try {
       await deletePost(postId);
@@ -225,17 +226,11 @@ export default function AdminPostedPosts() {
           </div>
         </div>
       )}
-
-      {posts.length === 0 && (
-        <div className="text-center py-20 text-gray-400">
-          No reflections have been posted yet.
-        </div>
-      )}
     </section>
   );
 }
 
-// PostCard Component (Exactly as you had it)
+// PostCard Component
 function PostCard({
   post,
   index,
@@ -257,7 +252,7 @@ function PostCard({
 
   return (
     <article
-      className={`relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 ease-in-out ${
+      className={`relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 ${
         isHero ? "h-[450px] md:h-[550px] w-full" : "h-80"
       }`}
       style={{
@@ -273,24 +268,17 @@ function PostCard({
           {isEditing ? (
             <div className="space-y-3 p-4 bg-black/20 rounded-xl backdrop-blur-sm border border-white/10">
               <input
-                className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-xs text-red-400 font-bold uppercase outline-none focus:border-red-500"
+                className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-xs text-red-400 font-bold uppercase outline-none"
                 value={editForm?.verse}
                 onChange={(e) =>
                   setEditForm({ ...editForm!, verse: e.target.value })
                 }
               />
               <input
-                className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-lg font-bold outline-none focus:border-white/50"
+                className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-lg font-bold outline-none"
                 value={editForm?.title}
                 onChange={(e) =>
                   setEditForm({ ...editForm!, title: e.target.value })
-                }
-              />
-              <textarea
-                className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-sm h-16 resize-none"
-                value={editForm?.says}
-                onChange={(e) =>
-                  setEditForm({ ...editForm!, says: e.target.value })
                 }
               />
               <textarea
@@ -309,13 +297,13 @@ function PostCard({
                 {post.verse}
               </span>
               <h2
-                className={`${isHero ? "text-4xl md:text-6xl max-w-3xl" : "text-xl"} font-black leading-tight tracking-tight`}
+                className={`${isHero ? "text-4xl md:text-6xl max-w-3xl" : "text-xl"} font-black leading-tight`}
               >
                 {post.title}
               </h2>
               {post.says && (
                 <p
-                  className={`${isHero ? "text-xl" : "text-sm"} font-medium text-gray-100 italic border-l-4 border-red-600 pl-4 py-2 bg-white/5 rounded-r-lg`}
+                  className={`${isHero ? "text-xl" : "text-sm"} font-medium italic border-l-4 border-red-600 pl-4 py-2 bg-white/5`}
                 >
                   "{post.says}"
                 </p>
@@ -330,7 +318,7 @@ function PostCard({
         </div>
 
         <div className="mt-6 flex justify-between items-center pt-5 border-t border-white/10">
-          <div className="flex gap-4 md:gap-8 items-center">
+          <div className="flex gap-4 items-center">
             {isEditing ? (
               <button
                 onClick={onCancel}
@@ -342,23 +330,19 @@ function PostCard({
               <>
                 <button
                   onClick={onToggleExpand}
-                  className="text-sm font-bold text-gray-200 hover:text-white transition-colors"
+                  className="text-sm font-bold text-gray-200"
                 >
-                  {isExpanded
-                    ? "Minimize"
-                    : isHero
-                      ? "Read Full Reflection"
-                      : "Read"}
+                  {isExpanded ? "Minimize" : "Read More"}
                 </button>
                 <button
                   onClick={onEdit}
-                  className="text-sm font-bold text-gray-400 hover:text-blue-400 flex items-center gap-1 transition-colors"
+                  className="text-sm font-bold text-gray-400 hover:text-blue-400 flex items-center gap-1"
                 >
                   <Edit3 size={16} /> Edit
                 </button>
                 <button
-                  className="text-sm font-bold text-gray-400 hover:text-green-400 flex items-center gap-1 transition-colors"
                   onClick={onShare}
+                  className="text-sm font-bold text-gray-400 hover:text-green-400 flex items-center gap-1"
                 >
                   <Share2 size={16} /> Share
                 </button>
@@ -369,9 +353,8 @@ function PostCard({
           <div className="flex items-center gap-3">
             {isEditing ? (
               <button
-                disabled={isUpdating}
                 onClick={onUpdate}
-                className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-full text-sm font-black flex items-center gap-2 transition-all shadow-lg shadow-green-900/20"
+                className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-full text-sm font-black flex items-center gap-2 transition-all"
               >
                 {isUpdating ? (
                   <Loader2 size={18} className="animate-spin" />
@@ -384,14 +367,13 @@ function PostCard({
               <Button
                 disabled={isDeleting}
                 onClick={onDelete}
-                className="bg-red-600/20 hover:bg-red-600 border border-red-600/50 px-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all"
+                className="bg-red-600/20 hover:bg-red-600 border border-red-600/50 px-2 py-2 rounded-lg"
               >
                 {isDeleting ? (
                   <Loader2 size={14} className="animate-spin" />
                 ) : (
                   <Trash2 size={14} />
                 )}
-                {isDeleting ? "..." : ""}
               </Button>
             )}
           </div>
