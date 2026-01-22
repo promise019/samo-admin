@@ -10,6 +10,7 @@ import {
   doc,
   updateDoc,
   increment,
+  setDoc,
 } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { deletePost, updatePost } from "../lib/storage";
@@ -83,7 +84,7 @@ export default function AdminPostedPosts() {
   const handleShare = async (post: AdminPost) => {
     const shareData = {
       title: post.title,
-      text: `📖 *${post.title}*\n\n"${post.says}"\n\nRead more at:`,
+      text: `📖 *${post.title}*\n\n ${post.verse} \n\n"${post.says}" \n\n${post.message}  \n\nRead more at:`,
       url: "https://bible-posts-yk2m.vercel.app/",
     };
 
@@ -95,7 +96,13 @@ export default function AdminPostedPosts() {
         await navigator.share(shareData);
 
         // ONLY increments on success
-        await updateDoc(statsRef, { shares: increment(1) });
+        await setDoc(
+          statsRef,
+          {
+            shares: increment(1),
+          },
+          { merge: true },
+        );
         console.log("[Stats] Global share recorded");
       } catch (err: any) {
         // Check if user clicked "Cancel" (AbortError)
