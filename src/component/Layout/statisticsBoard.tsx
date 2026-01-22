@@ -20,7 +20,7 @@ export default function StatisticsBoard() {
       setStatsData((prev) => ({ ...prev, likes: likesSum }));
     });
 
-    // 2. Sync Views & Shares: Listen to the global metadata document
+    // 2. Sync Views & Shares
     const statsRef = doc(db, "siteStats", "metadata");
     const unsubStats = onSnapshot(statsRef, (docSnap) => {
       if (docSnap.exists()) {
