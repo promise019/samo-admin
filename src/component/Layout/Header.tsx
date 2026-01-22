@@ -15,8 +15,8 @@ export default function Header() {
       case "/admin/analytics":
         return "Analytics";
         break;
-      case "/admin/settings":
-        return "Settings";
+      case "/admin/scheduleposts":
+        return "Schedule Posts";
         break;
     }
   };

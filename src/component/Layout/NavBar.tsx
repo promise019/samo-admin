@@ -1,5 +1,6 @@
 import {
   AlignStartVerticalIcon,
+  Clock,
   LayoutDashboardIcon,
   PodcastIcon,
 } from "lucide-react";
@@ -37,6 +38,16 @@ export default function NavBar() {
       >
         <PodcastIcon />
         <h1 className="lg:inline-block">Posts</h1>
+      </NavLink>
+      <NavLink
+        to="scheduleposts"
+        className={({ isActive }) =>
+          `rounded-full grid grid-cols-1 justify-items-center text-center p-2 md:rounded-l-none md:flex md:items-center md:justify-start md:text-left md:space-x-2 
+          lg:p-3 md:rounded-r-lg ${isActive ? "bg-red-900 text-white font-bold" : "text-gray-400"}`
+        }
+      >
+        <Clock />
+        <h1 className="lg:inline-block">Sheduled Posts</h1>
       </NavLink>
       <NavLink
         to="analytics"
