@@ -7,7 +7,8 @@ import {
   updateDoc,
   getDoc,
 } from "firebase/firestore";
-import { db, auth } from "./firebase";
+// import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import Storage utilities
+import { db, auth, storage } from "./firebase";
 
 interface PostData {
   title: string;
@@ -20,6 +21,8 @@ interface PostData {
   status?: string;
   adminId?: string;
   isAdminPost: boolean;
+  // imageFile?: File | null; // 1. Added this to fix the TS error
+  imageUrl?: string;
 }
 
 export const uploadAdminPost = async (textData: PostData) => {
@@ -29,17 +32,40 @@ export const uploadAdminPost = async (textData: PostData) => {
     throw new Error("Unauthorized: Please log in to post.");
   }
 
-  // FIXED: We now include publishedAt and status so the query can "see" the post
+  let finalImageUrl = "";
+
+  // 3. Handle Image Upload if a file exists
+  // if (textData.imageFile) {
+  //   try {
+  //     // Create a unique filename
+  //     const storageRef = ref(
+  //       storage,
+  //       `posts/${Date.now()}_${textData.imageFile.name}`,
+  //     );
+
+  //     // Upload the file
+  //     const snapshot = await uploadBytes(storageRef, textData.imageFile);
+
+  //     // Get the public URL
+  //     finalImageUrl = await getDownloadURL(snapshot.ref);
+  //   } catch (error) {
+  //     console.error("Image upload failed:", error);
+  //     // You can choose to throw or continue without an image
+  //   }
+  // }
+
+  // 4. Save to Firestore
   const docRef = await addDoc(collection(db, "posts"), {
     title: textData.title,
     message: textData.message,
     verse: textData.verse,
     says: textData.says,
+    imageUrl: finalImageUrl, // Store the link to the image
     adminId: user.uid,
     isAdminPost: true,
     createdAt: textData.createdAt || serverTimestamp(),
-    publishedAt: textData.publishedAt, // CRITICAL: This was missing
-    status: textData.status || "published", // CRITICAL: This was missing
+    publishedAt: textData.publishedAt,
+    status: textData.status || "published",
   });
 
   return docRef.id;

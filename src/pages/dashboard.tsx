@@ -1,12 +1,11 @@
 import { useState } from "react";
-// import Input from "../component/UI/Input";
 import Button from "../component/UI/Button";
 import type { ChangeEvent, FormEvent } from "react";
 import { uploadAdminPost } from "../lib/storage";
 import { auth } from "../lib/firebase";
 import { Timestamp } from "firebase/firestore";
 import { toast, ToastContainer } from "react-toastify";
-import { Loader2, PenLine } from "lucide-react";
+import { Loader2, PenLine /* ImageIcon, X */ } from "lucide-react";
 import StatisticsBoard from "../component/Layout/statisticsBoard";
 
 export default function Dashboard() {
@@ -15,9 +14,25 @@ export default function Dashboard() {
     message: "",
     verse: "",
     says: "",
-    img: null as File | null,
+    // img: null as File | null, // Image Logic Paused
   });
   const [isloading, setLoading] = useState(false);
+  // const [previewUrl, setPreviewUrl] = useState<string | null>(null); // Image Logic Paused
+
+  /* // Handle Image Selection Logic Paused
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPostData({ ...postData, img: file });
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const clearImage = () => {
+    setPostData({ ...postData, img: null });
+    setPreviewUrl(null);
+  };
+  */
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,22 +50,24 @@ export default function Dashboard() {
     try {
       const now = Timestamp.now();
 
-      // Using the exact fields you listed
       await uploadAdminPost({
         adminId: auth.currentUser?.uid,
         title: postData.title,
         message: postData.message,
         verse: postData.verse,
         says: postData.says,
+        // imageFile: postData.img, // Image Logic Paused
         createdAt: now,
-        publishedAt: now, // Added: to match schedule schema
-        status: "published", // Added: to match schedule schema
-        isAdminPost: true, // Added: your specific dashboard flag
+        publishedAt: now,
+        status: "published",
+        isAdminPost: true,
       });
 
       toast.success("Daily Word published successfully!");
-      setPostData({ title: "", message: "", verse: "", says: "", img: null });
+      setPostData({ title: "", message: "", verse: "", says: "" });
+      // setPreviewUrl(null); // Image Logic Paused
     } catch (error: any) {
+      console.error(error);
       toast.error("Failed to publish.");
     } finally {
       setLoading(false);
@@ -127,6 +144,28 @@ export default function Dashboard() {
               }
             />
           </div>
+
+          {/* IMAGE UPLOAD SECTION - COMMENTED FOR FUTURE USE
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Background Image (Optional)</label>
+            {!previewUrl ? (
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <ImageIcon className="text-gray-400 mb-2" size={24} />
+                  <p className="text-xs text-gray-500">Click to upload image</p>
+                </div>
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              </label>
+            ) : (
+              <div className="relative w-full h-40 rounded-xl overflow-hidden border border-gray-200">
+                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                <button type="button" onClick={clearImage} className="absolute top-2 right-2 p-1 bg-red-800 text-white rounded-full hover:bg-red-900 transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div> 
+          */}
 
           <Button
             type="submit"
